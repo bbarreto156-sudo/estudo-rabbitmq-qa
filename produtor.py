@@ -14,7 +14,7 @@ def send_order():
         "order_id": 123456,
         "customer_email": "dev@teste.com",
         "total_amount": 150.00,
-        "status": "False"
+        "status": 150
     }
 
     channel.basic_publish(
