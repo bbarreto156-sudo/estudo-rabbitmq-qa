@@ -1,12 +1,11 @@
 name: Pipeline de Testes de Contrato
 
-on: [push] # Isso faz o teste rodar toda vez que você enviar código
+on: [push]
 
 jobs:
   executar-testes:
     runs-on: ubuntu-latest
 
-    # Sobe o RabbitMQ automaticamente no servidor do GitHub
     services:
       rabbitmq:
         image: rabbitmq:3.13-management
@@ -27,12 +26,19 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Instalar bibliotecas necessarias
+      - name: Instalar bibliotecas e Plugin de Relatorio
         run: |
-          pip install pika jsonschema pytest
+          pip install pika jsonschema pytest pytest-html
 
       - name: Simular envio de mensagem (Produtor)
         run: python produtor.py
 
-      - name: Rodar Testes de Contrato
-        run: pytest test_rabbitmq_contrato.py
+      - name: Rodar Testes e Gerar HTML
+        run: pytest test_rabbitmq_contrato.py --html=relatorio_testes.html --self-contained-html
+
+      - name: Anexar Relatorio no GitHub Actions
+        if: always() # Garante que o relatório seja gerado mesmo se o teste falhar
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-de-testes-contrato
+          path: relatorio_testes.html
